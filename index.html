@@ -500,7 +500,7 @@
                     <div class="checklist-item-title">Build Prep</div>
                     <div class="checklist-item-sub">aDB verification, cable/gear inventory, PPE</div>
                 </div>
-                <span class="penalty-badge">−20</span>
+                <span class="penalty-badge" data-penalty="20">+20</span>
             </label>
 
             <label class="checklist-item checked" id="item_rack_stack">
@@ -512,7 +512,7 @@
                     <div class="checklist-item-title">Rack & Stack</div>
                     <div class="checklist-item-sub">Rail installation, PDU mounting, secure/fasten devices</div>
                 </div>
-                <span class="penalty-badge">−10</span>
+                <span class="penalty-badge" data-penalty="10">+10</span>
             </label>
 
             <label class="checklist-item checked" id="item_power">
@@ -524,7 +524,7 @@
                     <div class="checklist-item-title">Power</div>
                     <div class="checklist-item-sub">PDU connection, velcro buckles</div>
                 </div>
-                <span class="penalty-badge">−10</span>
+                <span class="penalty-badge" data-penalty="10">+10</span>
             </label>
 
             <label class="checklist-item checked" id="item_cat6">
@@ -536,7 +536,7 @@
                     <div class="checklist-item-title">CAT6</div>
                     <div class="checklist-item-sub">Management network, bend radius</div>
                 </div>
-                <span class="penalty-badge">−10</span>
+                <span class="penalty-badge" data-penalty="10">+10</span>
             </label>
 
             <label class="checklist-item checked" id="item_dac">
@@ -548,7 +548,7 @@
                     <div class="checklist-item-title">DAC</div>
                     <div class="checklist-item-sub">Connectors flush, correct port, bend radius</div>
                 </div>
-                <span class="penalty-badge">−10</span>
+                <span class="penalty-badge" data-penalty="10">+10</span>
             </label>
 
             <label class="checklist-item checked" id="item_dressing">
@@ -560,7 +560,7 @@
                     <div class="checklist-item-title">Cable Dressing</div>
                     <div class="checklist-item-sub">Clean routing, velcro management</div>
                 </div>
-                <span class="penalty-badge">−10</span>
+                <span class="penalty-badge" data-penalty="10">+10</span>
             </label>
 
         </div>
@@ -628,6 +628,9 @@
         function toggleItem(checkbox) {
             const item = checkbox.closest('.checklist-item');
             item.classList.toggle('checked', checkbox.checked);
+            const badge = item.querySelector('.penalty-badge');
+            const base = badge.dataset.penalty;
+            badge.innerText = checkbox.checked ? `+${base}` : `−${base}`;
         }
 
         function updateDifficultyBadge() {
