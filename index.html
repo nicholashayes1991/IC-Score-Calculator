@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IC Technician Score Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
     <style>
         :root {
             --apple-blue: #0071e3;
             --apple-green: #34c759;
             --apple-red: #ff3b30;
             --apple-orange: #ff9500;
-            --bg-color: #f5f5f7;
+            --bg-color: #f0f4ff;
             --card-bg: #ffffff;
             --text-main: #1d1d1f;
             --text-muted: #86868b;
@@ -20,361 +21,715 @@
         * {
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 2rem;
+            background: linear-gradient(145deg, #e8eeff 0%, #f5f0ff 50%, #e8f5ff 100%);
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
-            margin: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2.5rem 1.5rem;
         }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 18px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        h2 {
-            margin-top: 0;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-top: 0;
+        /* ── Hero Header ── */
+        .hero {
+            text-align: center;
             margin-bottom: 2rem;
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(0,113,227,0.1);
+            color: var(--apple-blue);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0,113,227,0.2);
         }
 
-        label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
+        .hero-badge span {
+            width: 6px;
+            height: 6px;
+            background: var(--apple-blue);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #0071e3, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        /* ── Section Labels ── */
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            margin-top: 2rem;
+        }
+
+        .section-label:first-of-type {
+            margin-top: 0;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        /* ── Form Fields ── */
+        .form-group {
+            margin-bottom: 1.1rem;
+        }
+
+        label.field-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.45rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #b0b0b8;
+            pointer-events: none;
         }
 
         select, input[type="text"], input[type="number"] {
             width: 100%;
-            padding: 0.8rem;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            font-size: 1rem;
+            padding: 0.8rem 0.9rem 0.8rem 2.5rem;
+            border-radius: 12px;
+            border: 1.5px solid var(--border-color);
+            font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fafafa;
+            color: var(--text-main);
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2386868b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 2.5rem;
         }
 
         select:focus, input[type="text"]:focus, input[type="number"]:focus {
             border-color: var(--apple-blue);
+            box-shadow: 0 0 0 3px rgba(0,113,227,0.12);
+            background: #fff;
         }
 
-        .checkbox-group {
-            background: #fbfbfd;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
+        /* ── QA Checklist ── */
+        .checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .checkbox-item {
+        .checklist-item {
             display: flex;
             align-items: center;
-            margin-bottom: 0.8rem;
-        }
-
-        .checkbox-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-right: 10px;
-            accent-color: var(--apple-blue);
-        }
-
-        .checkbox-item label {
-            margin-bottom: 0;
-            font-weight: 400;
-            font-size: 0.95rem;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1.5px solid var(--border-color);
+            background: #fafafa;
             cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
         }
 
-        button {
+        .checklist-item:hover {
+            border-color: #b0c8f0;
+            background: #f0f6ff;
+        }
+
+        .checklist-item.checked {
+            border-color: rgba(52, 199, 89, 0.4);
+            background: rgba(52, 199, 89, 0.06);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            display: none;
+        }
+
+        .check-box {
+            width: 22px;
+            height: 22px;
+            border-radius: 7px;
+            border: 2px solid var(--border-color);
+            background: #fff;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s ease;
+        }
+
+        .checklist-item.checked .check-box {
+            background: var(--apple-green);
+            border-color: var(--apple-green);
+        }
+
+        .check-box svg {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.18s ease;
+        }
+
+        .checklist-item.checked .check-box svg {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .checklist-item-content {
+            flex: 1;
+        }
+
+        .checklist-item-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .checklist-item-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .penalty-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--apple-red);
+            flex-shrink: 0;
+        }
+
+        .checklist-item.checked .penalty-badge {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--apple-green);
+        }
+
+        /* ── Calculate Button ── */
+        .calc-btn {
             width: 100%;
-            background-color: var(--apple-blue);
+            background: linear-gradient(135deg, #0071e3, #5e8ef7);
             color: white;
             border: none;
             padding: 1rem;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
+            margin-top: 2rem;
             transition: all 0.2s;
-            margin-top: 1rem;
+            box-shadow: 0 4px 16px rgba(0,113,227,0.35);
+            letter-spacing: 0.01em;
         }
 
-        button:hover {
-            opacity: 0.9;
+        .calc-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(0,113,227,0.45);
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 1rem;
+        .calc-btn:active {
+            transform: translateY(0);
         }
 
-        .secondary-btn {
-            background-color: transparent;
-            color: var(--apple-blue);
-            border: 2px solid var(--apple-blue);
-            margin-top: 0;
-            padding: 0.8rem;
-        }
-
-        .secondary-btn:hover {
-            background-color: rgba(0, 113, 227, 0.05);
-            opacity: 1;
-        }
-
+        /* ── Result Box ── */
         .result-box {
             margin-top: 2rem;
-            padding: 1.5rem;
-            border-radius: 12px;
-            text-align: center;
+            border-radius: 18px;
+            overflow: hidden;
             display: none;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
+            animation: slideUp 0.35s ease;
         }
 
-        .result-score {
-            font-size: 3rem;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            padding: 2rem 1.75rem 1.5rem;
+            text-align: center;
+        }
+
+        .score-ring-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .score-ring {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .score-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .score-ring-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-number {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .score-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .result-status {
+            font-size: 1.05rem;
             font-weight: 700;
-            margin: 0;
+            margin-bottom: 0.3rem;
         }
 
-        .result-text {
-            margin-top: 0.5rem;
+        .result-sub {
+            font-size: 0.85rem;
+            opacity: 0.75;
+        }
+
+        /* ── Metrics ── */
+        .result-metrics {
+            background: rgba(255,255,255,0.5);
+            margin: 0 1.25rem 1.25rem;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.7rem 1rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
             font-weight: 500;
         }
 
-        .metrics-breakdown {
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            text-align: left;
-            background: rgba(255,255,255,0.5);
-            padding: 1rem;
-            border-radius: 8px;
+        .metric-value {
+            font-weight: 700;
         }
 
-        .metrics-breakdown div {
+        /* ── Action Buttons ── */
+        .action-buttons {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.3rem;
+            gap: 10px;
+            padding: 0 1.25rem 1.5rem;
+        }
+
+        .secondary-btn {
+            flex: 1;
+            background: rgba(255,255,255,0.7);
+            border: 1.5px solid rgba(0,0,0,0.12);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255,255,255,0.95);
+            transform: translateY(-1px);
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 </head>
 <body>
 
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-badge"><span></span> IC Training Program</div>
+        <h1>Score Calculator</h1>
+        <p>Evaluate cabinet build times and QA checklist compliance</p>
+    </div>
+
+    <!-- Card -->
     <div class="card">
-        <h2>IC Score Calculator</h2>
-        <p class="subtitle">Evaluate technician build times and QA checks.</p>
+
+        <div class="section-label">Technician Info</div>
 
         <div class="form-group">
-            <label for="techName">Technician Name</label>
-            <input type="text" id="techName" placeholder="e.g. Jane Doe">
-        </div>
-
-        <div class="form-group">
-            <label for="cabinetNum">Cabinet Build Number</label>
-            <select id="cabinetNum">
-                <option value="1">1st Solo Cabinet (Target: ≤ 8 hrs)</option>
-                <option value="2">2nd Solo Cabinet (Target: ≤ 6 hrs)</option>
-                <option value="3">3rd Solo Cabinet (Target: ≤ 4 hrs)</option>
-                <option value="4">4th Solo Cabinet (Target: ≤ 4 hrs)</option>
-                <option value="5">5th+ Solo Cabinet (Target: ≤ 4 hrs)</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="actualTime">Actual Build Time (Hours)</label>
-            <input type="number" id="actualTime" placeholder="e.g. 5.5" step="0.1" min="0">
-        </div>
-
-        <div class="form-group">
-            <label>Quality Assurance (QA) Checklist</label>
-            <div class="checkbox-group">
-                <div class="checkbox-item">
-                    <input type="checkbox" id="qa_build_prep" checked>
-                    <label for="qa_build_prep">Build Prep (aDB verification, cable/gear inventory, PPE)</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="qa_rack_stack" checked>
-                    <label for="qa_rack_stack">Rack & Stack (Rail installation, PDU mounting, secure/fasten devices)</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="qa_power" checked>
-                    <label for="qa_power">Power (PDU connection, velcro buckles)</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="qa_cat6" checked>
-                    <label for="qa_cat6">CAT6 (Management network, bend radius)</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="qa_dac" checked>
-                    <label for="qa_dac">DAC (Connectors flush, correct port, bend radius)</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="qa_dressing" checked>
-                    <label for="qa_dressing">Cable Dressing (Clean routing, velcro management)</label>
-                </div>
+            <label class="field-label" for="techName">Technician Name</label>
+            <div class="input-wrapper">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="techName" placeholder="e.g. Jane Doe" autocomplete="name">
             </div>
         </div>
 
-        <button onclick="calculateScore()">Calculate Score</button>
+        <div class="form-group">
+            <label class="field-label" for="cabinetNum">Cabinet Build Number</label>
+            <div class="input-wrapper">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                <select id="cabinetNum">
+                    <option value="1">1st Solo Cabinet — Target ≤ 8 hrs</option>
+                    <option value="2">2nd Solo Cabinet — Target ≤ 6 hrs</option>
+                    <option value="3">3rd Solo Cabinet — Target ≤ 4 hrs</option>
+                    <option value="4">4th Solo Cabinet — Target ≤ 4 hrs</option>
+                    <option value="5">5th+ Solo Cabinet — Target ≤ 4 hrs</option>
+                </select>
+            </div>
+        </div>
 
+        <div class="form-group">
+            <label class="field-label" for="actualTime">Actual Build Time (Hours)</label>
+            <div class="input-wrapper">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <input type="number" id="actualTime" placeholder="e.g. 5.5" step="0.1" min="0">
+            </div>
+        </div>
+
+        <div class="section-label">QA Checklist</div>
+
+        <div class="checklist">
+
+            <label class="checklist-item checked" id="item_build_prep">
+                <input type="checkbox" id="qa_build_prep" checked onchange="toggleItem(this)">
+                <div class="check-box">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="checklist-item-content">
+                    <div class="checklist-item-title">Build Prep</div>
+                    <div class="checklist-item-sub">aDB verification, cable/gear inventory, PPE</div>
+                </div>
+                <span class="penalty-badge">−20</span>
+            </label>
+
+            <label class="checklist-item checked" id="item_rack_stack">
+                <input type="checkbox" id="qa_rack_stack" checked onchange="toggleItem(this)">
+                <div class="check-box">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="checklist-item-content">
+                    <div class="checklist-item-title">Rack & Stack</div>
+                    <div class="checklist-item-sub">Rail installation, PDU mounting, secure/fasten devices</div>
+                </div>
+                <span class="penalty-badge">−10</span>
+            </label>
+
+            <label class="checklist-item checked" id="item_power">
+                <input type="checkbox" id="qa_power" checked onchange="toggleItem(this)">
+                <div class="check-box">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="checklist-item-content">
+                    <div class="checklist-item-title">Power</div>
+                    <div class="checklist-item-sub">PDU connection, velcro buckles</div>
+                </div>
+                <span class="penalty-badge">−10</span>
+            </label>
+
+            <label class="checklist-item checked" id="item_cat6">
+                <input type="checkbox" id="qa_cat6" checked onchange="toggleItem(this)">
+                <div class="check-box">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="checklist-item-content">
+                    <div class="checklist-item-title">CAT6</div>
+                    <div class="checklist-item-sub">Management network, bend radius</div>
+                </div>
+                <span class="penalty-badge">−10</span>
+            </label>
+
+            <label class="checklist-item checked" id="item_dac">
+                <input type="checkbox" id="qa_dac" checked onchange="toggleItem(this)">
+                <div class="check-box">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="checklist-item-content">
+                    <div class="checklist-item-title">DAC</div>
+                    <div class="checklist-item-sub">Connectors flush, correct port, bend radius</div>
+                </div>
+                <span class="penalty-badge">−10</span>
+            </label>
+
+            <label class="checklist-item checked" id="item_dressing">
+                <input type="checkbox" id="qa_dressing" checked onchange="toggleItem(this)">
+                <div class="check-box">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="checklist-item-content">
+                    <div class="checklist-item-title">Cable Dressing</div>
+                    <div class="checklist-item-sub">Clean routing, velcro management</div>
+                </div>
+                <span class="penalty-badge">−10</span>
+            </label>
+
+        </div>
+
+        <button class="calc-btn" onclick="calculateScore()">Calculate Score</button>
+
+        <!-- Result -->
         <div id="resultBox" class="result-box">
-            <p class="result-score" id="scoreDisplay">0%</p>
-            <p class="result-text" id="statusDisplay">Status</p>
-            
-            <div class="metrics-breakdown">
-                <div><span>Target Time:</span> <strong id="outTarget">0 hrs</strong></div>
-                <div><span>Time Penalty:</span> <strong id="outTimePen" style="color: var(--apple-red)">0 pts</strong></div>
-                <div><span>QA Penalties:</span> <strong id="outQaPen" style="color: var(--apple-red)">0 pts</strong></div>
+
+            <div class="result-header">
+                <div class="score-ring-wrapper">
+                    <div class="score-ring">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="#f0f0f0" stroke-width="10"/>
+                            <circle id="ringArc" cx="60" cy="60" r="50" fill="none" stroke="#34c759" stroke-width="10"
+                                stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"
+                                style="transition: stroke-dashoffset 0.8s ease, stroke 0.4s ease"/>
+                        </svg>
+                        <div class="score-ring-text">
+                            <span class="score-number" id="scoreDisplay">—</span>
+                            <span class="score-label">Score</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-status" id="statusDisplay">—</div>
+                <div class="result-sub" id="subDisplay">—</div>
+            </div>
+
+            <div class="result-metrics">
+                <div class="metric-row">
+                    <span class="metric-label">Target Time</span>
+                    <span class="metric-value" id="outTarget">—</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Time Penalty</span>
+                    <span class="metric-value" id="outTimePen" style="color: var(--apple-red)">—</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">QA Penalty</span>
+                    <span class="metric-value" id="outQaPen" style="color: var(--apple-red)">—</span>
+                </div>
             </div>
 
             <div class="action-buttons">
-                <button class="secondary-btn" onclick="copyToClipboard()" id="copyBtn">Copy Results</button>
-                <button class="secondary-btn" onclick="downloadExcel()">Download Excel</button>
+                <button class="secondary-btn" onclick="copyToClipboard()" id="copyBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    Copy
+                </button>
+                <button class="secondary-btn" onclick="downloadExcel()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Export Excel
+                </button>
             </div>
+
         </div>
+
     </div>
 
     <script>
+        // Toggle checklist item style
+        function toggleItem(checkbox) {
+            const item = checkbox.closest('.checklist-item');
+            item.classList.toggle('checked', checkbox.checked);
+        }
+
         function calculateScore() {
-            // 1. Get Inputs
             const cabNum = parseInt(document.getElementById('cabinetNum').value);
             const actualTime = parseFloat(document.getElementById('actualTime').value) || 0;
-            
-            // 2. Define Target Times based on Module 3 expectations
+
             let targetTime = 8;
             if (cabNum === 2) targetTime = 6;
-            if (cabNum >= 3) targetTime = 4; // 3rd, 4th, 5th+ are 4 hours or less
+            if (cabNum >= 3) targetTime = 4;
 
-            // 3. Base Score is 100
             let finalScore = 100;
             let timePenalty = 0;
             let qaPenalty = 0;
 
-            // 4. Time Scoring Logic
             if (actualTime > targetTime) {
-                const overage = actualTime - targetTime;
-                timePenalty = Math.round(overage * 10); // 10 points per hour over
+                timePenalty = Math.round((actualTime - targetTime) * 10);
                 finalScore -= timePenalty;
             }
 
-            // 5. QA Scoring Logic
-            if (!document.getElementById('qa_build_prep').checked) qaPenalty += 20; 
+            if (!document.getElementById('qa_build_prep').checked) qaPenalty += 20;
             if (!document.getElementById('qa_rack_stack').checked) qaPenalty += 10;
-            if (!document.getElementById('qa_power').checked) qaPenalty += 10;
-            if (!document.getElementById('qa_cat6').checked) qaPenalty += 10;
-            if (!document.getElementById('qa_dac').checked) qaPenalty += 10; 
-            if (!document.getElementById('qa_dressing').checked) qaPenalty += 10;
+            if (!document.getElementById('qa_power').checked)      qaPenalty += 10;
+            if (!document.getElementById('qa_cat6').checked)        qaPenalty += 10;
+            if (!document.getElementById('qa_dac').checked)         qaPenalty += 10;
+            if (!document.getElementById('qa_dressing').checked)    qaPenalty += 10;
 
             finalScore -= qaPenalty;
             if (finalScore < 0) finalScore = 0;
 
-            // 6. UI Updates
+            // Show result
             const resultBox = document.getElementById('resultBox');
-            const scoreDisplay = document.getElementById('scoreDisplay');
-            const statusDisplay = document.getElementById('statusDisplay');
-
             resultBox.style.display = 'block';
-            scoreDisplay.innerText = finalScore + '%';
-            
-            document.getElementById('outTarget').innerText = `≤ ${targetTime} hrs`;
-            document.getElementById('outTimePen').innerText = `-${timePenalty} pts`;
-            document.getElementById('outQaPen').innerText = `-${qaPenalty} pts`;
 
+            document.getElementById('scoreDisplay').innerText = finalScore + '%';
+            document.getElementById('outTarget').innerText = `≤ ${targetTime} hrs`;
+            document.getElementById('outTimePen').innerText = timePenalty > 0 ? `-${timePenalty} pts` : '0 pts';
+            document.getElementById('outQaPen').innerText   = qaPenalty > 0  ? `-${qaPenalty} pts`  : '0 pts';
+
+            // Score ring arc
+            const circumference = 314;
+            const offset = circumference - (finalScore / 100) * circumference;
+            const arc = document.getElementById('ringArc');
+            arc.style.strokeDashoffset = offset;
+
+            // Color & status
+            let color, status, sub, bgTop, bgBot;
             if (finalScore >= 95) {
-                resultBox.style.backgroundColor = 'rgba(52, 199, 89, 0.1)';
-                resultBox.style.borderColor = 'var(--apple-green)';
-                scoreDisplay.style.color = 'var(--apple-green)';
-                statusDisplay.innerText = 'Excellent — Meets IC Standards';
+                color = '#34c759'; bgTop = 'rgba(52,199,89,0.10)'; bgBot = 'rgba(52,199,89,0.04)';
+                status = '🏆 Excellent — Meets IC Standards';
+                sub = 'Technician is performing above expectations.';
             } else if (finalScore >= 80) {
-                resultBox.style.backgroundColor = 'rgba(255, 149, 0, 0.1)';
-                resultBox.style.borderColor = 'var(--apple-orange)';
-                scoreDisplay.style.color = 'var(--apple-orange)';
-                statusDisplay.innerText = 'Passable — Needs Additional Mentorship';
+                color = '#ff9500'; bgTop = 'rgba(255,149,0,0.10)'; bgBot = 'rgba(255,149,0,0.04)';
+                status = '⚠️ Passable — Needs Mentorship';
+                sub = 'Some areas require additional coaching.';
             } else {
-                resultBox.style.backgroundColor = 'rgba(255, 59, 48, 0.1)';
-                resultBox.style.borderColor = 'var(--apple-red)';
-                scoreDisplay.style.color = 'var(--apple-red)';
-                
+                color = '#ff3b30'; bgTop = 'rgba(255,59,48,0.10)'; bgBot = 'rgba(255,59,48,0.04)';
                 if (!document.getElementById('qa_build_prep').checked) {
-                    statusDisplay.innerText = 'Failed — Prep/Safety Violation. Escalation Required.';
+                    status = '🚨 Failed — Safety Violation';
+                    sub = 'Prep/Safety check failed. Escalation required.';
                 } else {
-                    statusDisplay.innerText = 'Failed — Retraining Required.';
+                    status = '❌ Failed — Retraining Required';
+                    sub = 'Performance is below IC standards.';
                 }
             }
+
+            arc.style.stroke = color;
+            document.getElementById('scoreDisplay').style.color = color;
+            document.getElementById('statusDisplay').innerText = status;
+            document.getElementById('statusDisplay').style.color = color;
+            document.getElementById('subDisplay').innerText = sub;
+
+            resultBox.style.background = `linear-gradient(180deg, ${bgTop} 0%, ${bgBot} 100%)`;
+            resultBox.style.border = `2px solid ${color}30`;
+
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         function getReportContent() {
             const techName = document.getElementById('techName').value || 'Unknown Technician';
             const cabSelect = document.getElementById('cabinetNum');
-            const cabDesc = cabSelect.options[cabSelect.selectedIndex].text;
-            const actualTime = document.getElementById('actualTime').value || '0';
-            
-            const score = document.getElementById('scoreDisplay').innerText;
-            const status = document.getElementById('statusDisplay').innerText;
-            const targetTime = document.getElementById('outTarget').innerText;
-            const timePen = document.getElementById('outTimePen').innerText;
-            const qaPen = document.getElementById('outQaPen').innerText;
-
-            const dateStr = new Date().toLocaleString();
-
-            return `IC TECHNICIAN EVALUATION REPORT
-=======================================
-Date: ${dateStr}
-Technician: ${techName}
-Evaluation: ${cabDesc}
-
-PERFORMANCE METRICS
----------------------------------------
-Target Build Time: ${targetTime}
-Actual Build Time: ${actualTime} hrs
-
-RESULTS
----------------------------------------
-Final Score: ${score}
-Status: ${status}
-
-PENALTIES BREAKDOWN
----------------------------------------
-Time Over Target Penalty: ${timePen}
-QA Checklist Penalties:   ${qaPen}
-=======================================`;
+            return {
+                techName,
+                cabDesc: cabSelect.options[cabSelect.selectedIndex].text,
+                actualTime: document.getElementById('actualTime').value || '0',
+                score: document.getElementById('scoreDisplay').innerText,
+                status: document.getElementById('statusDisplay').innerText,
+                targetTime: document.getElementById('outTarget').innerText,
+                timePen: document.getElementById('outTimePen').innerText,
+                qaPen: document.getElementById('outQaPen').innerText,
+                dateStr: new Date().toLocaleString()
+            };
         }
 
         function copyToClipboard() {
-            const text = getReportContent();
+            const d = getReportContent();
+            const text = `IC TECHNICIAN EVALUATION REPORT
+=======================================
+Date:        ${d.dateStr}
+Technician:  ${d.techName}
+Evaluation:  ${d.cabDesc}
+
+PERFORMANCE
+---------------------------------------
+Target Time: ${d.targetTime}
+Actual Time: ${d.actualTime} hrs
+
+RESULTS
+---------------------------------------
+Final Score: ${d.score}
+Status:      ${d.status}
+
+PENALTIES
+---------------------------------------
+Time:        ${d.timePen}
+QA:          ${d.qaPen}
+=======================================`;
             navigator.clipboard.writeText(text).then(() => {
                 const btn = document.getElementById('copyBtn');
-                const originalText = btn.innerText;
-                btn.innerText = 'Copied!';
-                setTimeout(() => { btn.innerText = originalText; }, 2000);
-            }).catch(err => {
-                alert('Failed to copy text: ', err);
+                btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+                setTimeout(() => {
+                    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy`;
+                }, 2000);
             });
         }
 
@@ -383,60 +738,32 @@ QA Checklist Penalties:   ${qaPen}
                 alert('The Excel export library is still loading. Please try again in a moment.');
                 return;
             }
-            const techName = document.getElementById('techName').value || 'Unknown Technician';
-            const cabSelect = document.getElementById('cabinetNum');
-            const cabDesc = cabSelect.options[cabSelect.selectedIndex].text;
-            const actualTime = document.getElementById('actualTime').value || '0';
-            
-            const score = document.getElementById('scoreDisplay').innerText;
-            const status = document.getElementById('statusDisplay').innerText;
-            const targetTime = document.getElementById('outTarget').innerText;
-            const timePen = document.getElementById('outTimePen').innerText;
-            const qaPen = document.getElementById('outQaPen').innerText;
-
-            const dateStr = new Date().toLocaleString();
-            
-            // Create data structure for the Excel file
+            const d = getReportContent();
             const ws_data = [
                 ["IC TECHNICIAN EVALUATION REPORT"],
                 [],
-                ["Date:", dateStr],
-                ["Technician:", techName],
-                ["Evaluation:", cabDesc],
+                ["Date:", d.dateStr],
+                ["Technician:", d.techName],
+                ["Evaluation:", d.cabDesc],
                 [],
                 ["PERFORMANCE METRICS"],
-                ["Target Build Time:", targetTime],
-                ["Actual Build Time:", `${actualTime} hrs`],
+                ["Target Build Time:", d.targetTime],
+                ["Actual Build Time:", `${d.actualTime} hrs`],
                 [],
                 ["RESULTS"],
-                ["Final Score:", score],
-                ["Status:", status],
+                ["Final Score:", d.score],
+                ["Status:", d.status],
                 [],
                 ["PENALTIES BREAKDOWN"],
-                ["Time Over Target Penalty:", timePen],
-                ["QA Checklist Penalties:", qaPen]
+                ["Time Over Target:", d.timePen],
+                ["QA Checklist:", d.qaPen]
             ];
-
-            // Create Worksheet
             const ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-            // Set column widths for better readability
-            ws['!cols'] = [
-                {wch: 25}, // Column A width
-                {wch: 35}  // Column B width
-            ];
-
-            // Create Workbook and append the Worksheet
+            ws['!cols'] = [{ wch: 25 }, { wch: 40 }];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Evaluation Report");
-
-            // Format filename
-            const safeName = techName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            const dateStrShort = new Date().toISOString().split('T')[0];
-            const fileName = `IC_Eval_${safeName}_${dateStrShort}.xlsx`;
-
-            // Trigger the download
-            XLSX.writeFile(wb, fileName);
+            const safeName = d.techName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            XLSX.writeFile(wb, `IC_Eval_${safeName}_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
     </script>
 </body>
