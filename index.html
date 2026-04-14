@@ -455,7 +455,7 @@
                 <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 <select id="difficulty" onchange="updateDifficultyBadge()">
                     <option value="1.00">🟢 LOW — Full grading (1.0×)</option>
-                    <option value="0.80">🟡 MEDIUM — Slightly lenient (0.8×)</option>
+                    <option value="0.80">🟡 MEDIUM — Ain't too hard on 'em (0.8×)</option>
                     <option value="0.60">🔴 HIGH — More lenient (0.6×)</option>
 
                 </select>
@@ -636,7 +636,7 @@
         function updateDifficultyBadge() {
             const notes = {
                 '1.00': 'LOW complexity cabinets are graded at full penalty weight.',
-                '0.80': 'MEDIUM complexity builds reduce all penalties to 80% of base weight.',
+                '0.80': "MEDIUM complexity — ain't too hard on 'em, penalties at 80%.",
                 '0.60': 'HIGH complexity builds reduce all penalties to 60% of base weight.'
             };
             const val = document.getElementById('difficulty').value;
