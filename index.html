@@ -500,7 +500,7 @@
                     <div class="checklist-item-title">Build Prep</div>
                     <div class="checklist-item-sub">aDB verification, cable/gear inventory, PPE</div>
                 </div>
-                <span class="penalty-badge" data-penalty="20">+20</span>
+                <span class="penalty-badge" data-penalty="10">+10</span>
             </label>
 
             <label class="checklist-item checked" id="item_rack_stack">
@@ -663,7 +663,7 @@
                 finalScore -= timePenalty;
             }
 
-            if (!document.getElementById('qa_build_prep').checked) qaPenalty += Math.round(20 * difficultyMultiplier);
+            if (!document.getElementById('qa_build_prep').checked) qaPenalty += Math.round(10 * difficultyMultiplier);
             if (!document.getElementById('qa_rack_stack').checked) qaPenalty += Math.round(10 * difficultyMultiplier);
             if (!document.getElementById('qa_power').checked)      qaPenalty += Math.round(10 * difficultyMultiplier);
             if (!document.getElementById('qa_cat6').checked)        qaPenalty += Math.round(10 * difficultyMultiplier);
