@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IC Score Calculator</title>
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-blue-dark: #0058b0;
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-main: #1d1d1f;
+            --text-muted: #86868b;
+            --border-color: #d2d2d7;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 560px;
+            width: 100%;
+        }
+
+        .icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, #0071e3, #34aadc);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 24px rgba(0, 113, 227, 0.3);
+        }
+
+        .icon svg {
+            width: 48px;
+            height: 48px;
+            fill: white;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+        }
+
+        p.description {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pill-label {
+            display: inline-block;
+            background: rgba(0, 113, 227, 0.1);
+            color: var(--apple-blue);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 0.9rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.1s;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background-color: var(--apple-blue);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--apple-blue);
+            border: 2px solid var(--apple-blue);
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 1.25rem 0;
+        }
+
+        .meta {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .meta a {
+            color: var(--apple-blue);
+            text-decoration: none;
+        }
+
+        .meta a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+        </div>
+
+        <h1>IC Score Calculator</h1>
+        <p class="description">Evaluate IC technician cabinet build times and QA checklist compliance. Get an instant score and export a full evaluation report.</p>
+
+        <div class="card">
+            <span class="pill-label">Live App</span>
+            <h2>Open the Calculator</h2>
+            <p>Run the full interactive calculator directly in your browser — no install required.</p>
+            <a class="btn btn-primary" href="https://nicholashayes1991.github.io/IC-Score-Calculator/" target="_blank">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Launch Calculator
+            </a>
+
+            <div class="divider"></div>
+
+            <h2>View Source Code</h2>
+            <p>Browse the full source code and revision history on GitHub.</p>
+            <a class="btn btn-secondary" href="https://github.com/nicholashayes1991/IC-Score-Calculator" target="_blank">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                View on GitHub
+            </a>
+        </div>
+
+        <p class="meta">Built for IC Technician Training &nbsp;·&nbsp; <a href="https://github.com/nicholashayes1991" target="_blank">@nicholashayes1991</a></p>
+
+    </div>
+
+</body>
+</html>
