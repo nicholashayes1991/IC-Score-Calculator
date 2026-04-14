@@ -182,7 +182,7 @@
             margin-bottom: 0.3rem;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 </head>
 <body>
 
@@ -379,6 +379,10 @@ QA Checklist Penalties:   ${qaPen}
         }
 
         function downloadExcel() {
+            if (typeof XLSX === 'undefined') {
+                alert('The Excel export library is still loading. Please try again in a moment.');
+                return;
+            }
             const techName = document.getElementById('techName').value || 'Unknown Technician';
             const cabSelect = document.getElementById('cabinetNum');
             const cabDesc = cabSelect.options[cabSelect.selectedIndex].text;
