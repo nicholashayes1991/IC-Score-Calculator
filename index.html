@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IC Technician Score Calculator</title>
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-green: #34c759;
+            --apple-red: #ff3b30;
+            --apple-orange: #ff9500;
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-main: #1d1d1f;
+            --text-muted: #86868b;
+            --border-color: #d2d2d7;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
+            border-color: var(--apple-blue);
+        }
+
+        .checkbox-group {
+            background: #fbfbfd;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .checkbox-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            accent-color: var(--apple-blue);
+        }
+
+        .checkbox-item label {
+            margin-bottom: 0;
+            font-weight: 400;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--apple-blue);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .secondary-btn {
+            background-color: transparent;
+            color: var(--apple-blue);
+            border: 2px solid var(--apple-blue);
+            margin-top: 0;
+            padding: 0.8rem;
+        }
+
+        .secondary-btn:hover {
+            background-color: rgba(0, 113, 227, 0.05);
+            opacity: 1;
+        }
+
+        .result-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .result-score {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .result-text {
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .metrics-breakdown {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            text-align: left;
+            background: rgba(255,255,255,0.5);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .metrics-breakdown div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <div class="card">
+        <h2>IC Score Calculator</h2>
+        <p class="subtitle">Evaluate technician build times and QA checks.</p>
+
+        <div class="form-group">
+            <label for="techName">Technician Name</label>
+            <input type="text" id="techName" placeholder="e.g. Jane Doe">
+        </div>
+
+        <div class="form-group">
+            <label for="cabinetNum">Cabinet Build Number</label>
+            <select id="cabinetNum">
+                <option value="1">1st Solo Cabinet (Target: ≤ 8 hrs)</option>
+                <option value="2">2nd Solo Cabinet (Target: ≤ 6 hrs)</option>
+                <option value="3">3rd Solo Cabinet (Target: ≤ 4 hrs)</option>
+                <option value="4">4th Solo Cabinet (Target: ≤ 4 hrs)</option>
+                <option value="5">5th+ Solo Cabinet (Target: ≤ 4 hrs)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="actualTime">Actual Build Time (Hours)</label>
+            <input type="number" id="actualTime" placeholder="e.g. 5.5" step="0.1" min="0">
+        </div>
+
+        <div class="form-group">
+            <label>Quality Assurance (QA) Checklist</label>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="qa_build_prep" checked>
+                    <label for="qa_build_prep">Build Prep (aDB verification, cable/gear inventory, PPE)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="qa_rack_stack" checked>
+                    <label for="qa_rack_stack">Rack & Stack (Rail installation, PDU mounting, secure/fasten devices)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="qa_power" checked>
+                    <label for="qa_power">Power (PDU connection, velcro buckles)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="qa_cat6" checked>
+                    <label for="qa_cat6">CAT6 (Management network, bend radius)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="qa_dac" checked>
+                    <label for="qa_dac">DAC (Connectors flush, correct port, bend radius)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="qa_dressing" checked>
+                    <label for="qa_dressing">Cable Dressing (Clean routing, velcro management)</label>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="calculateScore()">Calculate Score</button>
+
+        <div id="resultBox" class="result-box">
+            <p class="result-score" id="scoreDisplay">0%</p>
+            <p class="result-text" id="statusDisplay">Status</p>
+            
+            <div class="metrics-breakdown">
+                <div><span>Target Time:</span> <strong id="outTarget">0 hrs</strong></div>
+                <div><span>Time Penalty:</span> <strong id="outTimePen" style="color: var(--apple-red)">0 pts</strong></div>
+                <div><span>QA Penalties:</span> <strong id="outQaPen" style="color: var(--apple-red)">0 pts</strong></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="secondary-btn" onclick="copyToClipboard()" id="copyBtn">Copy Results</button>
+                <button class="secondary-btn" onclick="downloadExcel()">Download Excel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateScore() {
+            // 1. Get Inputs
+            const cabNum = parseInt(document.getElementById('cabinetNum').value);
+            const actualTime = parseFloat(document.getElementById('actualTime').value) || 0;
+            
+            // 2. Define Target Times based on Module 3 expectations
+            let targetTime = 8;
+            if (cabNum === 2) targetTime = 6;
+            if (cabNum >= 3) targetTime = 4; // 3rd, 4th, 5th+ are 4 hours or less
+
+            // 3. Base Score is 100
+            let finalScore = 100;
+            let timePenalty = 0;
+            let qaPenalty = 0;
+
+            // 4. Time Scoring Logic
+            if (actualTime > targetTime) {
+                const overage = actualTime - targetTime;
+                timePenalty = Math.round(overage * 10); // 10 points per hour over
+                finalScore -= timePenalty;
+            }
+
+            // 5. QA Scoring Logic
+            if (!document.getElementById('qa_build_prep').checked) qaPenalty += 20; 
+            if (!document.getElementById('qa_rack_stack').checked) qaPenalty += 10;
+            if (!document.getElementById('qa_power').checked) qaPenalty += 10;
+            if (!document.getElementById('qa_cat6').checked) qaPenalty += 10;
+            if (!document.getElementById('qa_dac').checked) qaPenalty += 10; 
+            if (!document.getElementById('qa_dressing').checked) qaPenalty += 10;
+
+            finalScore -= qaPenalty;
+            if (finalScore < 0) finalScore = 0;
+
+            // 6. UI Updates
+            const resultBox = document.getElementById('resultBox');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const statusDisplay = document.getElementById('statusDisplay');
+
+            resultBox.style.display = 'block';
+            scoreDisplay.innerText = finalScore + '%';
+            
+            document.getElementById('outTarget').innerText = `≤ ${targetTime} hrs`;
+            document.getElementById('outTimePen').innerText = `-${timePenalty} pts`;
+            document.getElementById('outQaPen').innerText = `-${qaPenalty} pts`;
+
+            if (finalScore >= 95) {
+                resultBox.style.backgroundColor = 'rgba(52, 199, 89, 0.1)';
+                resultBox.style.borderColor = 'var(--apple-green)';
+                scoreDisplay.style.color = 'var(--apple-green)';
+                statusDisplay.innerText = 'Excellent — Meets IC Standards';
+            } else if (finalScore >= 80) {
+                resultBox.style.backgroundColor = 'rgba(255, 149, 0, 0.1)';
+                resultBox.style.borderColor = 'var(--apple-orange)';
+                scoreDisplay.style.color = 'var(--apple-orange)';
+                statusDisplay.innerText = 'Passable — Needs Additional Mentorship';
+            } else {
+                resultBox.style.backgroundColor = 'rgba(255, 59, 48, 0.1)';
+                resultBox.style.borderColor = 'var(--apple-red)';
+                scoreDisplay.style.color = 'var(--apple-red)';
+                
+                if (!document.getElementById('qa_build_prep').checked) {
+                    statusDisplay.innerText = 'Failed — Prep/Safety Violation. Escalation Required.';
+                } else {
+                    statusDisplay.innerText = 'Failed — Retraining Required.';
+                }
+            }
+        }
+
+        function getReportContent() {
+            const techName = document.getElementById('techName').value || 'Unknown Technician';
+            const cabSelect = document.getElementById('cabinetNum');
+            const cabDesc = cabSelect.options[cabSelect.selectedIndex].text;
+            const actualTime = document.getElementById('actualTime').value || '0';
+            
+            const score = document.getElementById('scoreDisplay').innerText;
+            const status = document.getElementById('statusDisplay').innerText;
+            const targetTime = document.getElementById('outTarget').innerText;
+            const timePen = document.getElementById('outTimePen').innerText;
+            const qaPen = document.getElementById('outQaPen').innerText;
+
+            const dateStr = new Date().toLocaleString();
+
+            return `IC TECHNICIAN EVALUATION REPORT
+=======================================
+Date: ${dateStr}
+Technician: ${techName}
+Evaluation: ${cabDesc}
+
+PERFORMANCE METRICS
+---------------------------------------
+Target Build Time: ${targetTime}
+Actual Build Time: ${actualTime} hrs
+
+RESULTS
+---------------------------------------
+Final Score: ${score}
+Status: ${status}
+
+PENALTIES BREAKDOWN
+---------------------------------------
+Time Over Target Penalty: ${timePen}
+QA Checklist Penalties:   ${qaPen}
+=======================================`;
+        }
+
+        function copyToClipboard() {
+            const text = getReportContent();
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                setTimeout(() => { btn.innerText = originalText; }, 2000);
+            }).catch(err => {
+                alert('Failed to copy text: ', err);
+            });
+        }
+
+        function downloadExcel() {
+            const techName = document.getElementById('techName').value || 'Unknown Technician';
+            const cabSelect = document.getElementById('cabinetNum');
+            const cabDesc = cabSelect.options[cabSelect.selectedIndex].text;
+            const actualTime = document.getElementById('actualTime').value || '0';
+            
+            const score = document.getElementById('scoreDisplay').innerText;
+            const status = document.getElementById('statusDisplay').innerText;
+            const targetTime = document.getElementById('outTarget').innerText;
+            const timePen = document.getElementById('outTimePen').innerText;
+            const qaPen = document.getElementById('outQaPen').innerText;
+
+            const dateStr = new Date().toLocaleString();
+            
+            // Create data structure for the Excel file
+            const ws_data = [
+                ["IC TECHNICIAN EVALUATION REPORT"],
+                [],
+                ["Date:", dateStr],
+                ["Technician:", techName],
+                ["Evaluation:", cabDesc],
+                [],
+                ["PERFORMANCE METRICS"],
+                ["Target Build Time:", targetTime],
+                ["Actual Build Time:", `${actualTime} hrs`],
+                [],
+                ["RESULTS"],
+                ["Final Score:", score],
+                ["Status:", status],
+                [],
+                ["PENALTIES BREAKDOWN"],
+                ["Time Over Target Penalty:", timePen],
+                ["QA Checklist Penalties:", qaPen]
+            ];
+
+            // Create Worksheet
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+            // Set column widths for better readability
+            ws['!cols'] = [
+                {wch: 25}, // Column A width
+                {wch: 35}  // Column B width
+            ];
+
+            // Create Workbook and append the Worksheet
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Evaluation Report");
+
+            // Format filename
+            const safeName = techName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const dateStrShort = new Date().toISOString().split('T')[0];
+            const fileName = `IC_Eval_${safeName}_${dateStrShort}.xlsx`;
+
+            // Trigger the download
+            XLSX.writeFile(wb, fileName);
+        }
+    </script>
+</body>
+</html>
