@@ -450,6 +450,22 @@
         </div>
 
         <div class="form-group">
+            <label class="field-label" for="difficulty">Cabinet Difficulty</label>
+            <div class="input-wrapper">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <select id="difficulty" onchange="updateDifficultyBadge()">
+                    <option value="1.00">🟢 Standard — Full grading (1.0×)</option>
+                    <option value="0.80">🔵 Intermediate — Slightly lenient (0.8×)</option>
+                    <option value="0.60">🟠 Advanced — More lenient (0.6×)</option>
+                    <option value="0.40">🔴 Expert — Most lenient (0.4×)</option>
+                </select>
+            </div>
+            <div id="difficultyNote" style="margin-top:6px; font-size:0.78rem; color:var(--text-muted); padding-left:4px;">
+                Standard cabinets are graded at full penalty weight.
+            </div>
+        </div>
+
+        <div class="form-group">
             <label class="field-label" for="cabinetNum">Cabinet Build Number</label>
             <div class="input-wrapper">
                 <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
@@ -575,6 +591,10 @@
 
             <div class="result-metrics">
                 <div class="metric-row">
+                    <span class="metric-label">Difficulty</span>
+                    <span class="metric-value" id="outDifficulty">—</span>
+                </div>
+                <div class="metric-row">
                     <span class="metric-label">Target Time</span>
                     <span class="metric-value" id="outTarget">—</span>
                 </div>
@@ -610,9 +630,23 @@
             item.classList.toggle('checked', checkbox.checked);
         }
 
+        function updateDifficultyBadge() {
+            const notes = {
+                '1.00': 'Standard cabinets are graded at full penalty weight.',
+                '0.80': 'Intermediate builds reduce all penalties to 80% of base weight.',
+                '0.60': 'Advanced builds reduce all penalties to 60% of base weight.',
+                '0.40': 'Expert builds reduce all penalties to just 40% — most forgiving.'
+            };
+            const val = document.getElementById('difficulty').value;
+            document.getElementById('difficultyNote').innerText = notes[val] || '';
+        }
+
         function calculateScore() {
             const cabNum = parseInt(document.getElementById('cabinetNum').value);
             const actualTime = parseFloat(document.getElementById('actualTime').value) || 0;
+            const difficultyMultiplier = parseFloat(document.getElementById('difficulty').value);
+            const difficultySelect = document.getElementById('difficulty');
+            const difficultyLabel = difficultySelect.options[difficultySelect.selectedIndex].text;
 
             let targetTime = 8;
             if (cabNum === 2) targetTime = 6;
@@ -623,16 +657,16 @@
             let qaPenalty = 0;
 
             if (actualTime > targetTime) {
-                timePenalty = Math.round((actualTime - targetTime) * 10);
+                timePenalty = Math.round((actualTime - targetTime) * 10 * difficultyMultiplier);
                 finalScore -= timePenalty;
             }
 
-            if (!document.getElementById('qa_build_prep').checked) qaPenalty += 20;
-            if (!document.getElementById('qa_rack_stack').checked) qaPenalty += 10;
-            if (!document.getElementById('qa_power').checked)      qaPenalty += 10;
-            if (!document.getElementById('qa_cat6').checked)        qaPenalty += 10;
-            if (!document.getElementById('qa_dac').checked)         qaPenalty += 10;
-            if (!document.getElementById('qa_dressing').checked)    qaPenalty += 10;
+            if (!document.getElementById('qa_build_prep').checked) qaPenalty += Math.round(20 * difficultyMultiplier);
+            if (!document.getElementById('qa_rack_stack').checked) qaPenalty += Math.round(10 * difficultyMultiplier);
+            if (!document.getElementById('qa_power').checked)      qaPenalty += Math.round(10 * difficultyMultiplier);
+            if (!document.getElementById('qa_cat6').checked)        qaPenalty += Math.round(10 * difficultyMultiplier);
+            if (!document.getElementById('qa_dac').checked)         qaPenalty += Math.round(10 * difficultyMultiplier);
+            if (!document.getElementById('qa_dressing').checked)    qaPenalty += Math.round(10 * difficultyMultiplier);
 
             finalScore -= qaPenalty;
             if (finalScore < 0) finalScore = 0;
@@ -642,6 +676,7 @@
             resultBox.style.display = 'block';
 
             document.getElementById('scoreDisplay').innerText = finalScore + '%';
+            document.getElementById('outDifficulty').innerText = difficultyLabel.split('—')[0].trim();
             document.getElementById('outTarget').innerText = `≤ ${targetTime} hrs`;
             document.getElementById('outTimePen').innerText = timePenalty > 0 ? `-${timePenalty} pts` : '0 pts';
             document.getElementById('outQaPen').innerText   = qaPenalty > 0  ? `-${qaPenalty} pts`  : '0 pts';
@@ -688,9 +723,11 @@
         function getReportContent() {
             const techName = document.getElementById('techName').value || 'Unknown Technician';
             const cabSelect = document.getElementById('cabinetNum');
+            const difficultySelect = document.getElementById('difficulty');
             return {
                 techName,
                 cabDesc: cabSelect.options[cabSelect.selectedIndex].text,
+                difficulty: difficultySelect.options[difficultySelect.selectedIndex].text,
                 actualTime: document.getElementById('actualTime').value || '0',
                 score: document.getElementById('scoreDisplay').innerText,
                 status: document.getElementById('statusDisplay').innerText,
@@ -708,6 +745,7 @@
 Date:        ${d.dateStr}
 Technician:  ${d.techName}
 Evaluation:  ${d.cabDesc}
+Difficulty:  ${d.difficulty}
 
 PERFORMANCE
 ---------------------------------------
@@ -745,6 +783,7 @@ QA:          ${d.qaPen}
                 ["Date:", d.dateStr],
                 ["Technician:", d.techName],
                 ["Evaluation:", d.cabDesc],
+                ["Difficulty:", d.difficulty],
                 [],
                 ["PERFORMANCE METRICS"],
                 ["Target Build Time:", d.targetTime],
