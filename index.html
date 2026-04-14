@@ -457,7 +457,7 @@
                     <option value="1.00">🟢 Standard — Full grading (1.0×)</option>
                     <option value="0.80">🔵 Intermediate — Slightly lenient (0.8×)</option>
                     <option value="0.60">🟠 Advanced — More lenient (0.6×)</option>
-                    <option value="0.40">🔴 Expert — Most lenient (0.4×)</option>
+
                 </select>
             </div>
             <div id="difficultyNote" style="margin-top:6px; font-size:0.78rem; color:var(--text-muted); padding-left:4px;">
@@ -634,8 +634,7 @@
             const notes = {
                 '1.00': 'Standard cabinets are graded at full penalty weight.',
                 '0.80': 'Intermediate builds reduce all penalties to 80% of base weight.',
-                '0.60': 'Advanced builds reduce all penalties to 60% of base weight.',
-                '0.40': 'Expert builds reduce all penalties to just 40% — most forgiving.'
+                '0.60': 'Advanced builds reduce all penalties to 60% of base weight.'
             };
             const val = document.getElementById('difficulty').value;
             document.getElementById('difficultyNote').innerText = notes[val] || '';
